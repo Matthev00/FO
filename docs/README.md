@@ -24,6 +24,10 @@ b to współczynnik tłumienia.
     ```
 3. 
     ``` sh
+    psource /.
+    ```
+3. 
+    ``` sh
     pip install -r requirements.txt
     ```
 4. 

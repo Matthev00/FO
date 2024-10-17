@@ -16,7 +16,7 @@ b to współczynnik tłumienia.
 
 # Uruchomienie
 1. ```sh
-    git clone
+    git clone https://github.com/Matthev00/FO
     ```
 2. 
     ```sh

@@ -24,7 +24,7 @@ b to współczynnik tłumienia.
     ```
 3. 
     ``` sh
-    psource /.
+    source .venv/bin/activate
     ```
 3. 
     ``` sh

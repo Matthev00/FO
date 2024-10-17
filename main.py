@@ -7,12 +7,16 @@ L = 1.0  # długość struny
 Nx = 100  # liczba punktów w przestrzeni
 dx = L / (Nx - 1)  # krok w przestrzeni
 Nt = 500  # liczba kroków czasowych
-dt = 0.003  # krok czasowy
+dt = 0.004    # krok czasowy
 
 st.sidebar.title("Parametry struny")
 T = st.sidebar.slider("Napięcie struny (T)", 0.1, 5.0, 1.0, 0.1)  # slider dla napięcia
 mu = st.sidebar.slider("Gęstość liniowa (μ)", 0.01, 1.0, 0.1, 0.01)  # slider dla gęstości
 b = st.sidebar.slider("Współczynnik tłumienia (b)", 0.0, 1.0, 0.1, 0.01)  # slider dla tłumienia
+
+# # Obliczamy dynamicznie krok czasowy, aby spełniać warunek stabilności
+# c = np.sqrt(T / mu)  
+# dt = 0.8 * dx / c  
 
 def init_string_state():
     st.session_state.y = np.zeros(Nx)  

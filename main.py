@@ -5,34 +5,36 @@ import sounddevice as sd
 import threading
 import os
 import sounddevice as sd
+from player import SineWavePlayer
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 
 
 L = 1.0  # długość struny
 Nx = 200  # liczba punktów w przestrzeni
 dx = L / (Nx - 1)  # krok w przestrzeni
-Nt = 500  # liczba kroków czasowych
+Nt = 5000  # liczba kroków czasowych
 dt = 0.004    # krok czasowy
 # dzwiek
 AMPLITUDE = 0.01
 DURATION = 800  
-FREQUENCIES = [1000, 500, 333, 250]
+FREQUENCY = 440
 
 # # Obliczamy dynamicznie krok czasowy, aby spełniać warunek stabilności
 # c = np.sqrt(T / mu)  
 # dt = 0.8 * dx / c  
+
+
 
 def init_string_state():
     st.session_state.y = np.zeros(Nx)  
     st.session_state.y_new = np.zeros(Nx)
     st.session_state.y_old = np.zeros(Nx)
     st.session_state.simulation_started = False
-    st.session_state['play_sound_flag'] = False
-    st.session_state['sound_thread'] = None
+    st.session_state["player"] = SineWavePlayer(FREQUENCY)
 
 
 def start_wave():
-    for i in range(Nx):
+    for i in range(Nx): 
         if 40 <= i < 60:  # szarpnięcie w oknie od 40 do 60
             st.session_state.y[i] = 0.5 * np.sin(np.pi * (i - 40) / 20)
     st.session_state.y_old[:] = st.session_state.y 
@@ -50,12 +52,6 @@ def update(T, mu, b):
     st.session_state.y_old[:] = st.session_state.y
     st.session_state.y[:] = st.session_state.y_new
 
-def play_sound():
-    while st.session_state['play_sound_flag']: 
-        t = np.linspace(0, DURATION / 1000, int(DURATION * 44.1))  # Adjust sample rate
-        audio = sum(AMPLITUDE * np.sin(2 * np.pi * f * t) for f in FREQUENCIES)
-        sd.play(audio, samplerate=44100)
-        sd.wait()  # Wait until sound has finished playing
 
 def visualization(): 
     if 'y' not in st.session_state:
@@ -65,24 +61,23 @@ def visualization():
     T = st.sidebar.slider("Napięcie struny (T)", 0.1, 5.0, 1.0, 0.1)  # slider dla napięcia
     mu = st.sidebar.slider("Gęstość liniowa (μ)", 0.01, 1.0, 0.1, 0.01)  # slider dla gęstości
     b = st.sidebar.slider("Współczynnik tłumienia (b)", 0.0, 1.0, 0.1, 0.01)  # slider dla tłumienia
-
+    player_thread = None
 
     st.title('Symulacja fali poprzecznej na strunie')
 
-    if st.sidebar.button("Resetuj symulację"):
+    if st.sidebar.button("Resetuj symulację") and st.session_state.simulation_started:
+        st.session_state["player"].stop()
         init_string_state()
         
         
     if st.button('Start') and not st.session_state.simulation_started:
         start_wave()
         st.session_state.simulation_started = True
-        if st.session_state['sound_thread'] is None:
-            st.session_state['play_sound_flag'] = True 
-            st.session_state['sound_thread'] = threading.Thread(target=play_sound, daemon=True)
-            add_script_run_ctx(st.session_state['sound_thread'])
-            st.session_state['sound_thread'].start()
-
-
+        if not st.session_state["player"].playing:
+            player_thread = threading.Thread(target=st.session_state["player"].start, daemon=True)
+            player_thread.start()
+            add_script_run_ctx(st.session_state["player"])
+            
 
     if st.session_state.simulation_started:
         placeholder = st.empty()

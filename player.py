@@ -9,13 +9,14 @@ class SineWavePlayer:
         self.time = 0 
         self.amplitude = 0.2  
         self.playing = False  
+        self.number_harmonics = len(self.frequency)
 
     def callback(self, outdata, frames, time, status):
         if status:
             print(f'Stan: {status}')
         if self.playing:
             t = np.linspace(self.time, self.time + frames / self.sample_rate, frames, endpoint=False)
-            signal= sum(self.amplitude * np.sin(2 * np.pi * f * t).reshape(-1, 1) for f in self.frequency) / (len(self.frequency) * 2)
+            signal= sum(self.amplitude * np.sin(2 * np.pi * f * t).reshape(-1, 1) for f in self.frequency) / (self.number_harmonics * 2)
             outdata[:] = signal
             self.time += frames / self.sample_rate 
         else:
@@ -23,7 +24,7 @@ class SineWavePlayer:
 
     def start(self):
         self.playing = True
-        with sd.OutputStream(callback=self.callback, channels=1, samplerate=self.sample_rate, blocksize=1024):
+        with sd.OutputStream(callback=self.callback, channels=1, samplerate=self.sample_rate, blocksize=2048):
             while self.playing:
                 time.sleep(0.01)  
 

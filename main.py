@@ -15,14 +15,7 @@ dx = L / (Nx - 1)  # krok w przestrzeni
 Nt = 5000  # liczba kroków czasowych
 dt = 0.004    # krok czasowy
 # dzwiek
-AMPLITUDE = 0.01
-DURATION = 800  
 FREQUENCY = 440
-
-# # Obliczamy dynamicznie krok czasowy, aby spełniać warunek stabilności
-# c = np.sqrt(T / mu)  
-# dt = 0.8 * dx / c  
-
 
 
 def init_string_state():
@@ -49,6 +42,8 @@ def update(T, mu, b):
             + (T / mu) * dt**2 / dx**2 * (st.session_state.y[i+1] - 2 * st.session_state.y[i] + st.session_state.y[i-1])
             - b * dt / mu * (st.session_state.y[i] - st.session_state.y_old[i])
         )
+    amplitude = np.max(np.abs(st.session_state.y_new))
+    st.session_state["player"].set_amplitude(amplitude)
     st.session_state.y_old[:] = st.session_state.y
     st.session_state.y[:] = st.session_state.y_new
 
@@ -60,7 +55,7 @@ def visualization():
     st.sidebar.title("Parametry struny")
     T = st.sidebar.slider("Napięcie struny (T)", 0.1, 5.0, 1.0, 0.1)  # slider dla napięcia
     mu = st.sidebar.slider("Gęstość liniowa (μ)", 0.01, 1.0, 0.1, 0.01)  # slider dla gęstości
-    b = st.sidebar.slider("Współczynnik tłumienia (b)", 0.0, 1.0, 0.1, 0.01)  # slider dla tłumienia
+    b = st.sidebar.slider("Współczynnik tłumienia (b)", 0.0, 5.0, 0.1, 0.01)  # slider dla tłumienia
     player_thread = None
 
     st.title('Symulacja fali poprzecznej na strunie')

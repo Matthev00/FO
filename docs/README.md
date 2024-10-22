@@ -34,3 +34,5 @@ b to współczynnik tłumienia.
     ```sh 
     streamlit run main.py
     ```
+
+# Użyte zostały dwa modele generatywne GPT 4o i Copilot

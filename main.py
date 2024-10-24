@@ -27,10 +27,14 @@ def init_string_state():
 
 
 def start_wave():
-    for i in range(Nx): 
-        if 40 <= i < 60:  # szarpnięcie w oknie od 40 do 60
-            st.session_state.y[i] = 0.5 * np.sin(np.pi * (i - 40) / 20)
-    st.session_state.y_old[:] = st.session_state.y 
+    # Linia prosta na początku (brak fali)
+    st.session_state.y[:] = 0.0
+    st.session_state.y_old[:] = 0.0
+    
+    # Szarpnięcie w wybranym obszarze (z krótszym okresem sinusa)
+    for i in range(40, 60):  # Szarpnięcie w zakresie punktów od 40 do 60
+        st.session_state.y[i] = 0.5 * np.sin(4 * np.pi * (i - 40) / 20)  # Krótszy okres sinusa
+    st.session_state.y_old[:] = st.session_state.y  # Skopiuj dla poprzedniego stanu
 
 
 def update(T, mu, b):
@@ -53,9 +57,9 @@ def visualization():
         init_string_state()
 
     st.sidebar.title("Parametry struny")
-    T = st.sidebar.slider("Napięcie struny (T)", 0.1, 5.0, 1.0, 0.1)  # slider dla napięcia
+    T = st.sidebar.slider("Napięcie struny (T)", 0.1, 3.0, 1.0, 0.1)  # slider dla napięcia
     mu = st.sidebar.slider("Gęstość liniowa (μ)", 0.01, 1.0, 0.1, 0.01)  # slider dla gęstości
-    b = st.sidebar.slider("Współczynnik tłumienia (b)", 0.0, 5.0, 0.1, 0.01)  # slider dla tłumienia
+    b = st.sidebar.slider("Współczynnik tłumienia (b)", 1.0, 5.0, 1.0, 0.1)  # slider dla tłumienia
     player_thread = None
 
     st.title('Symulacja fali poprzecznej na strunie')

@@ -34,7 +34,7 @@ class SineWavePlayer:
             callback=self.callback,
             channels=1,
             samplerate=self.sample_rate,
-            blocksize=2048,
+            blocksize=4096,
         ):
             while self.playing:
                 time.sleep(0.01)

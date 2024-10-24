@@ -12,7 +12,8 @@ L = 1.0  # długość struny
 Nx = 200  # liczba punktów w przestrzeni
 dx = L / (Nx - 1)  # krok w przestrzeni
 Nt = 5000  # liczba kroków czasowych
-dt = 0.004  # krok czasowy
+dt = 0.001  # krok czasowy
+mu = 2  # gęstość liniowa struny
 # dzwiek
 FREQUENCY = 0
 
@@ -49,15 +50,15 @@ def update(T, mu, b):
     st.session_state["player"].set_amplitude(amplitude)
 
     v = np.sqrt(T / mu)  # Prędkość fali
-    frequency = v / (2 * L)  # Częstotliwość fali
+    frequency = 100 * v / (2 * L)  # Częstotliwość fali
     st.write(f"Częstotliwość: {frequency:.2f} Hz")
 
     # Stabilizacja częstotliwości
     if amplitude > 0.01:
         if 20 <= frequency <= 20000:
-            st.session_state["player"].set_frequency(frequency)
+            st.session_state["player"].set_freq(frequency)
     else:
-        st.session_state["player"].set_frequency(0)
+        st.session_state["player"].set_freq(0)
 
     # Aktualizacja stanu struny
     st.session_state.y_old[:] = st.session_state.y
@@ -65,18 +66,16 @@ def update(T, mu, b):
 
 
 def visualization():
+    global mu
     if "y" not in st.session_state:
         init_string_state()
 
     st.sidebar.title("Parametry struny")
     T = st.sidebar.slider(
-        "Napięcie struny (T)", 0.1, 3.0, 1.0, 0.1
-    )
-    mu = st.sidebar.slider(
-        "Gęstość liniowa (μ)", 0.01, 1.0, 0.1, 0.01
+        "Napięcie struny (T)", 1.5, 50.0, 2.0, 1.0
     )
     b = st.sidebar.slider(
-        "Współczynnik tłumienia (b)", 1.0, 5.0, 1.0, 0.1
+        "Współczynnik tłumienia (b)", 10.0, 50.0, 1.0, 0.1
     )
     player_thread = None
 

@@ -51,7 +51,10 @@ def update(T, mu, b):
 
     v = np.sqrt(T / mu)  # Prędkość fali
     frequency = 100 * v / (2 * L)  # Częstotliwość fali
-    st.write(f"Częstotliwość: {frequency:.2f} Hz")
+
+    if "frequency_display" not in st.session_state:
+        st.session_state.frequency_display = st.empty()
+    st.session_state.frequency_display.write(f"Częstotliwość: {frequency:.2f} Hz")
 
     # Stabilizacja częstotliwości
     if amplitude > 0.01:
@@ -71,12 +74,8 @@ def visualization():
         init_string_state()
 
     st.sidebar.title("Parametry struny")
-    T = st.sidebar.slider(
-        "Napięcie struny (T)", 1.5, 50.0, 2.0, 1.0
-    )
-    b = st.sidebar.slider(
-        "Współczynnik tłumienia (b)", 10.0, 50.0, 1.0, 0.1
-    )
+    T = st.sidebar.slider("Napięcie struny (T)", 1.5, 50.0, 2.0, 1.0)
+    b = st.sidebar.slider("Współczynnik tłumienia (b)", 10.0, 50.0, 1.0, 0.1)
     player_thread = None
 
     st.title("Symulacja fali poprzecznej na strunie")

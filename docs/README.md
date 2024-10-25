@@ -1,6 +1,8 @@
+# Opis projektu 
+Projekt symuluje wizualnie oraz dźwiekowo falę poprzeczną na strunie wraz z wytracaniem enregii. W tym celu zostala zrealizowana prosta aplikacja w której uzytkowni może modyfikować napięcie struny oraz współczynnik wytracania energii.  
+
 # Model matematyczny 
 1. Równanie falowe
-
 
 ![alt text](image.png)  
 ​

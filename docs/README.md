@@ -15,6 +15,7 @@ b to współczynnik tłumienia.
 # Dyskretyzacja
 
 ![alt text](image-2.png)
+Dyskretyzacja metodą różnic skończonych
 
 # Uruchomienie
 1. ```sh
@@ -37,4 +38,9 @@ b to współczynnik tłumienia.
     streamlit run main.py
     ```
 
-# Użyte zostały dwa modele generatywne GPT 4o i Copilot
+# Modele generatywne AI
+- ChatGPT 4o - aspekty streamlit, wielowątkowość
+- Copilot - model był włączony w IDE 
+
+# Źródła
+https://dspace.mit.edu/bitstream/handle/1721.1/111950/2-062j-fall-2006/contents/lecture-notes/lect1.pdf

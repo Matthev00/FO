@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import sounddevice as sd
 import threading
-import sounddevice as sd
 from player import SineWavePlayer
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 
@@ -25,7 +24,6 @@ def init_string_state():
     st.session_state.simulation_started = False
     st.session_state["player"] = SineWavePlayer(FREQUENCY)
 
-
 def start_wave():
     st.session_state.y[:] = 0.0
     st.session_state.y_old[:] = 0.0
@@ -35,28 +33,56 @@ def start_wave():
         st.session_state.y[i] = 0.5 * np.sin(4 * np.pi * (i - 40) / 20)
     st.session_state.y_old[:] = st.session_state.y
 
+def compute_fft(signal) -> tuple[np.ndarray, np.ndarray]:
+    """Oblicza FFT dla sygnału."""
+    N = len(signal)
+    fft_values = np.fft.fft(signal)
+    fft_magnitude = np.abs(fft_values[:N // 2])
+    freqs = np.fft.fftfreq(N, d=dt)[:N // 2]
+    return freqs, fft_magnitude
 
 def update(T, mu, b):
+    """Aktualizuje stan struny i dźwięku oraz oblicza FFT."""
     for i in range(1, Nx - 1):
         # Zdyskretyzowane równanie falowe
         st.session_state.y_new[i] = (
-            2 * st.session_state.y[i] 
-            - st.session_state.y_old[i] 
+            2 * st.session_state.y[i]
+            - st.session_state.y_old[i]
             + (T / mu) * dt**2 / dx**2 * (st.session_state.y[i+1] - 2 * st.session_state.y[i] + st.session_state.y[i-1])
             - b * dt / mu * (st.session_state.y[i] - st.session_state.y_old[i])
         )
 
-    amplitude = np.max(np.abs(st.session_state.y_new))  # Amplituda fali
+    freqs, fft_magnitude = compute_fft(st.session_state.y_new)
+
+    if "fft_plot" not in st.session_state:
+        st.session_state.fft_plot = st.empty()
+
+    fig_fft, ax_fft = plt.subplots()
+    ax_fft.plot(freqs, fft_magnitude)
+    ax_fft.set_title("Widmo częstotliwości")
+    ax_fft.set_xlabel("Częstotliwość (Hz)")
+    ax_fft.set_ylabel("Amplituda")
+    ax_fft.set_ylim([0, 5]) 
+
+
+    # Linie oznaczające mody własne
+    v = np.sqrt(T / mu)  # prędkość propagacji fali
+    modes = [n * v / (2 * L) for n in range(1, 1000, 100)]  # pierwsze 4 mody
+    for mode in modes:
+        ax_fft.axvline(x=mode, color='red', linestyle='--', label=f'Mod {modes.index(mode) + 1}')
+    ax_fft.legend()
+
+    st.session_state.fft_plot.pyplot(fig_fft)
+    plt.close(fig_fft)
+
+    amplitude = np.max(np.abs(st.session_state.y_new))
     st.session_state["player"].set_amplitude(amplitude)
 
-    v = np.sqrt(T / mu)  # Prędkość fali
-    frequency = 100 * v / (2 * L)  # Częstotliwość fali
-
+    frequency = 100 * v / (2 * L)
     if "frequency_display" not in st.session_state:
         st.session_state.frequency_display = st.empty()
     st.session_state.frequency_display.write(f"Częstotliwość: {frequency:.2f} Hz")
 
-    # Stabilizacja częstotliwości
     if amplitude > 0.01:
         if 20 <= frequency <= 20000:
             st.session_state["player"].set_freq(frequency)
@@ -67,9 +93,8 @@ def update(T, mu, b):
     st.session_state.y_old[:] = st.session_state.y
     st.session_state.y[:] = st.session_state.y_new
 
-
 def visualization():
-    global mu
+    """Wizualizuje symulację fali poprzecznej na strunie."""
     if "y" not in st.session_state:
         init_string_state()
 
@@ -106,7 +131,6 @@ def visualization():
             ax.set_ylabel("y (m)")
 
             placeholder.pyplot(fig)
-
             plt.close(fig)
 
             update(T=T, mu=mu, b=b)
@@ -120,7 +144,6 @@ def visualization():
 
         st.pyplot(fig)
         plt.close(fig)
-
 
 if __name__ == "__main__":
     visualization()

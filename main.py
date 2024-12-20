@@ -6,7 +6,6 @@ import threading
 from player import SineWavePlayer
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 
-
 L = 1.0  # długość struny
 Nx = 200  # liczba punktów w przestrzeni
 dx = L / (Nx - 1)  # krok w przestrzeni
@@ -24,6 +23,7 @@ def init_string_state():
     st.session_state.simulation_started = False
     st.session_state["player"] = SineWavePlayer(FREQUENCY)
 
+
 def start_wave():
     st.session_state.y[:] = 0.0
     st.session_state.y_old[:] = 0.0
@@ -33,13 +33,15 @@ def start_wave():
         st.session_state.y[i] = 0.5 * np.sin(4 * np.pi * (i - 40) / 20)
     st.session_state.y_old[:] = st.session_state.y
 
+
 def compute_fft(signal) -> tuple[np.ndarray, np.ndarray]:
     """Oblicza FFT dla sygnału."""
     N = len(signal)
     fft_values = np.fft.fft(signal)
-    fft_magnitude = np.abs(fft_values[:N // 2])
-    freqs = np.fft.fftfreq(N, d=dt)[:N // 2]
+    fft_magnitude = np.abs(fft_values[: N // 2])
+    freqs = np.fft.fftfreq(N, d=dt)[: N // 2]
     return freqs, fft_magnitude
+
 
 def update(T, mu, b):
     """Aktualizuje stan struny i dźwięku oraz oblicza FFT."""
@@ -48,7 +50,14 @@ def update(T, mu, b):
         st.session_state.y_new[i] = (
             2 * st.session_state.y[i]
             - st.session_state.y_old[i]
-            + (T / mu) * dt**2 / dx**2 * (st.session_state.y[i+1] - 2 * st.session_state.y[i] + st.session_state.y[i-1])
+            + (T / mu)
+            * dt**2
+            / dx**2
+            * (
+                st.session_state.y[i + 1]
+                - 2 * st.session_state.y[i]
+                + st.session_state.y[i - 1]
+            )
             - b * dt / mu * (st.session_state.y[i] - st.session_state.y_old[i])
         )
 
@@ -62,36 +71,35 @@ def update(T, mu, b):
     ax_fft.set_title("Widmo częstotliwości")
     ax_fft.set_xlabel("Częstotliwość (Hz)")
     ax_fft.set_ylabel("Amplituda")
-    ax_fft.set_ylim([0, 5]) 
-
+    ax_fft.set_ylim([0, 5])
 
     # Linie oznaczające mody własne
     v = np.sqrt(T / mu)  # prędkość propagacji fali
-    modes = [n * v / (2 * L) for n in range(1, 1000, 100)]  # pierwsze 4 mody
+    modes = [n * v / (2 * L) for n in range(1, 1000, 100)]
     for mode in modes:
-        ax_fft.axvline(x=mode, color='red', linestyle='--', label=f'Mod {modes.index(mode) + 1}')
+        ax_fft.axvline(
+            x=mode, color="red", linestyle="--", label=f"Mod {modes.index(mode) + 1}"
+        )
     ax_fft.legend()
 
     st.session_state.fft_plot.pyplot(fig_fft)
     plt.close(fig_fft)
 
-    amplitude = np.max(np.abs(st.session_state.y_new))
-    st.session_state["player"].set_amplitude(amplitude)
+    # Najmocniejsze harmoniczne z FFT
+    dominant_modes = freqs[np.argsort(-fft_magnitude)[:3]]
+    amplitudes = fft_magnitude[np.argsort(-fft_magnitude)[:3]]
+    st.session_state["player"].set_freq(dominant_modes[0])
+    st.session_state["player"].set_amplitude(max(amplitudes) / len(dominant_modes))
 
     frequency = 100 * v / (2 * L)
     if "frequency_display" not in st.session_state:
         st.session_state.frequency_display = st.empty()
     st.session_state.frequency_display.write(f"Częstotliwość: {frequency:.2f} Hz")
 
-    if amplitude > 0.01:
-        if 20 <= frequency <= 20000:
-            st.session_state["player"].set_freq(frequency)
-    else:
-        st.session_state["player"].set_freq(0)
-
     # Aktualizacja stanu struny
     st.session_state.y_old[:] = st.session_state.y
     st.session_state.y[:] = st.session_state.y_new
+
 
 def visualization():
     """Wizualizuje symulację fali poprzecznej na strunie."""
@@ -130,6 +138,15 @@ def visualization():
             ax.set_xlabel("x (m)")
             ax.set_ylabel("y (m)")
 
+            # Węzły jako kropki
+            nodes = np.where(np.isclose(st.session_state.y_new, 0, atol=0.01))[0]
+            ax.scatter(
+                np.linspace(0, L, Nx)[nodes],
+                st.session_state.y_new[nodes],
+                color="red",
+                label="Węzły",
+            )
+
             placeholder.pyplot(fig)
             plt.close(fig)
 
@@ -144,6 +161,7 @@ def visualization():
 
         st.pyplot(fig)
         plt.close(fig)
+
 
 if __name__ == "__main__":
     visualization()

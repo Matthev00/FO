@@ -138,15 +138,6 @@ def visualization():
             ax.set_xlabel("x (m)")
             ax.set_ylabel("y (m)")
 
-            # Węzły jako kropki
-            nodes = np.where(np.isclose(st.session_state.y_new, 0, atol=0.01))[0]
-            ax.scatter(
-                np.linspace(0, L, Nx)[nodes],
-                st.session_state.y_new[nodes],
-                color="red",
-                label="Węzły",
-            )
-
             placeholder.pyplot(fig)
             plt.close(fig)
 

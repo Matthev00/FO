@@ -7,7 +7,7 @@ from player import SineWavePlayer
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 
 L = 1.0  # długość struny
-Nx = 200  # liczba punktów w przestrzeni
+Nx = 500  # liczba punktów w przestrzeni
 dx = L / (Nx - 1)  # krok w przestrzeni
 Nt = 5000  # liczba kroków czasowych
 dt = 0.001  # krok czasowy
@@ -86,15 +86,27 @@ def update(T, mu, b):
     plt.close(fig_fft)
 
     # Najmocniejsze harmoniczne z FFT
-    dominant_modes = freqs[np.argsort(-fft_magnitude)[:3]]
-    amplitudes = fft_magnitude[np.argsort(-fft_magnitude)[:3]]
-    st.session_state["player"].set_freq(dominant_modes[0])
-    st.session_state["player"].set_amplitude(max(amplitudes) / len(dominant_modes))
+    # ominant_modes = freqs[np.argsort(-fft_magnitude)[:3]]
+    # amplitudes = fft_magnitude[np.argsort(-fft_magnitude)[:3]]
+    #
+    dominant_modes = freqs
+    amplitudes = fft_magnitude
+
+    if np.sum(amplitudes) > 0:
+        avg_frequency = np.sum(dominant_modes * amplitudes) / np.sum(amplitudes)
+    else:
+        avg_frequency = 0
+
+    if avg_frequency > 20:
+        st.session_state["player"].set_freq(avg_frequency)
+    else:
+        st.session_state["player"].set_freq(20)
+    st.session_state["player"].set_amplitude(sum(amplitudes) / len(dominant_modes))
 
     frequency = 100 * v / (2 * L)
     if "frequency_display" not in st.session_state:
         st.session_state.frequency_display = st.empty()
-    st.session_state.frequency_display.write(f"Częstotliwość: {frequency:.2f} Hz")
+    st.session_state.frequency_display.write(f"Częstotliwość: {avg_frequency:.2f} Hz")
 
     # Aktualizacja stanu struny
     st.session_state.y_old[:] = st.session_state.y
@@ -108,7 +120,7 @@ def visualization():
 
     st.sidebar.title("Parametry struny")
     T = st.sidebar.slider("Napięcie struny (T)", 1.5, 50.0, 2.0, 1.0)
-    b = st.sidebar.slider("Współczynnik tłumienia (b)", 10.0, 50.0, 1.0, 0.1)
+    b = st.sidebar.slider("Współczynnik tłumienia (b)", 0.01, 20.0, 1.0, 0.01)
     player_thread = None
 
     st.title("Symulacja fali poprzecznej na strunie")

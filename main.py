@@ -7,7 +7,7 @@ from player import SineWavePlayer
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 
 L = 1.0  # długość struny
-Nx = 500  # liczba punktów w przestrzeni
+Nx = 200  # liczba punktów w przestrzeni
 dx = L / (Nx - 1)  # krok w przestrzeni
 Nt = 5000  # liczba kroków czasowych
 dt = 0.001  # krok czasowy
@@ -85,10 +85,6 @@ def update(T, mu, b):
     st.session_state.fft_plot.pyplot(fig_fft)
     plt.close(fig_fft)
 
-    # Najmocniejsze harmoniczne z FFT
-    # ominant_modes = freqs[np.argsort(-fft_magnitude)[:3]]
-    # amplitudes = fft_magnitude[np.argsort(-fft_magnitude)[:3]]
-    #
     dominant_modes = freqs
     amplitudes = fft_magnitude
 
@@ -103,9 +99,6 @@ def update(T, mu, b):
         st.session_state["player"].set_freq(20)
     st.session_state["player"].set_amplitude(sum(amplitudes) / len(dominant_modes))
 
-    frequency = 100 * v / (2 * L)
-    if "frequency_display" not in st.session_state:
-        st.session_state.frequency_display = st.empty()
     st.session_state.frequency_display.write(f"Częstotliwość: {avg_frequency:.2f} Hz")
 
     # Aktualizacja stanu struny
@@ -124,6 +117,9 @@ def visualization():
     player_thread = None
 
     st.title("Symulacja fali poprzecznej na strunie")
+
+    if "frequency_display" not in st.session_state:
+        st.session_state.frequency_display = st.empty()
 
     if st.sidebar.button("Resetuj symulację") and st.session_state.simulation_started:
         st.session_state["player"].stop()
@@ -148,7 +144,7 @@ def visualization():
             ax.set_ylim([-1.5, 1.5])
             ax.set_title("Symulacja fali poprzecznej na strunie")
             ax.set_xlabel("x (m)")
-            ax.set_ylabel("y (m)")
+            ax.set_ylabel("y")
 
             placeholder.pyplot(fig)
             plt.close(fig)

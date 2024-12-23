@@ -5,7 +5,7 @@ import time
 
 class SineWavePlayer:
     def __init__(self, frequency, sample_rate=44100):
-        self.frequency = [frequency * (i + 1) for i in range(1)]
+        self.frequency = [frequency * (i + 1) for i in range(3)]
         self.sample_rate = sample_rate
         self.time = 0
         self.amplitude = 0.2
@@ -37,7 +37,7 @@ class SineWavePlayer:
             return
 
     def set_freq(self, freq):
-        self.target_frequency = [freq * (i + 1) for i in range(1)]
+        self.target_frequency = [freq * (i + 1) for i in range(3)]
 
     def start(self):
         self.playing = True

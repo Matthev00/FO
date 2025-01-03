@@ -17,6 +17,18 @@ T to napięcie struny,
 $\mu$ to gęstość liniowa struny,  
 b to współczynnik tłumienia.
 
+Częstotliwości kolejnych modów (n-tego modu własnego):
+$$
+F_n = \frac{v}{2L}*n
+$$
+
+Wyliczanie częstotliwości na podstawie FFT:
+$$
+f = \frac{\sum_{i=0}^{n}{f_ia_i}}{\sum_{i=0}^{n}{f_i}}
+$$
+gdzie n to liczba wyliczonych sygnałów z FFT   
+fi to kolejne czestotliwości z FFT  
+ai to kolejne amplitudy z FFT  
 # Dyskretyzacja
 
 $$
@@ -51,3 +63,4 @@ Dyskretyzacja metodą różnic skończonych
 
 # Źródła
 https://dspace.mit.edu/bitstream/handle/1721.1/111950/2-062j-fall-2006/contents/lecture-notes/lect1.pdf
+https://openstax.org/books/fizyka-dla-szk%C3%B3%C5%82-wy%C5%BCszych-tom-1/pages/16-6-fale-stojace-i-rezonans

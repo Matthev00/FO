@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
-import sounddevice as sd
 import threading
 from player import SineWavePlayer
 from streamlit.runtime.scriptrunner import add_script_run_ctx
@@ -72,15 +71,14 @@ def update(T, mu, b):
     ax_fft.set_xlabel("Częstotliwość (Hz)")
     ax_fft.set_ylabel("Amplituda")
     ax_fft.set_ylim([0, 5])
+    ax_fft.set_xlim([0, 500])
 
-    # Linie oznaczające mody własne
-    v = np.sqrt(T / mu)  # prędkość propagacji fali
+    v = np.sqrt(T / mu)  
     modes = [n * v / (2 * L) for n in range(1, 1000, 100)]
     for mode in modes:
         ax_fft.axvline(
             x=mode, color="red", linestyle="--", label=f"Mod {modes.index(mode) + 1}"
         )
-    ax_fft.legend()
 
     st.session_state.fft_plot.pyplot(fig_fft)
     plt.close(fig_fft)
@@ -101,7 +99,6 @@ def update(T, mu, b):
 
     st.session_state.frequency_display.write(f"Częstotliwość: {avg_frequency:.2f} Hz")
 
-    # Aktualizacja stanu struny
     st.session_state.y_old[:] = st.session_state.y
     st.session_state.y[:] = st.session_state.y_new
 
